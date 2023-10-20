@@ -9,7 +9,6 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 
 import streamlit as st
 from dotenv import load_dotenv
-from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings, HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS

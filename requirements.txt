@@ -2,3 +2,4 @@ openai
 langchain
 wikipedia
 python-dotenv
+tiktoken

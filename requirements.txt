@@ -3,3 +3,4 @@ langchain
 wikipedia
 python-dotenv
 tiktoken
+faiss-cpu

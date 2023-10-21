@@ -25,7 +25,7 @@ def wiki_to_text(page_title):
     # Get the content from the Wikipedia page
     try:
         page_content = wikipedia.page(page_title)
-        return page_content.content, None
+        return page_content.content, page_content.url, None
     except wikipedia.exceptions.PageError:
         error_msg = f"The page '{page_title}' does not exist on Wikipedia."
     except wikipedia.exceptions.DisambiguationError as e:
@@ -35,7 +35,7 @@ def wiki_to_text(page_title):
     except Exception as e:
         error_msg = f"An unexpected error occurred: {e}"
 
-    return None, error_msg
+    return None, None, error_msg
 
 
 
@@ -134,11 +134,12 @@ def main():
             st.write("Farhat is the author of this app")
             st.session_state.summary = ""
         else:
-            raw_text, error_msg = wiki_to_text(current_topic)
+            raw_text, url, error_msg = wiki_to_text(current_topic)
             if error_msg:
                 st.write(error_msg)
                 st.session_state.summary = ""
             else:
+                st.write(url)
                 st.session_state.summary = wkp.run(current_topic)
                 text_chunks = get_chunk_text(raw_text)
 

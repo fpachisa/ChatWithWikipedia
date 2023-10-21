@@ -129,19 +129,24 @@ def main():
         st.session_state.question_text = ""
 
         st.session_state.previous_topic = current_topic
-        raw_text, error_msg = wiki_to_text(current_topic)
-        if error_msg:
-            st.write(error_msg)
+
+        if current_topic.lower() in ["farhat", "farhat fachisa", "pachisa"]:
+            st.write("Farhat is the author of this app")
             st.session_state.summary = ""
         else:
-            st.session_state.summary = wkp.run(current_topic)
-            text_chunks = get_chunk_text(raw_text)
+            raw_text, error_msg = wiki_to_text(current_topic)
+            if error_msg:
+                st.write(error_msg)
+                st.session_state.summary = ""
+            else:
+                st.session_state.summary = wkp.run(current_topic)
+                text_chunks = get_chunk_text(raw_text)
 
-            # Create Vector Store
-            vector_store = get_vector_store(text_chunks)
+                # Create Vector Store
+                vector_store = get_vector_store(text_chunks)
 
-            # Create conversation chain
-            st.session_state.conversation = get_conversation_chain(vector_store)
+                # Create conversation chain
+                st.session_state.conversation = get_conversation_chain(vector_store)
 
     if st.session_state.summary != "":
         expander = st.expander("See summary")

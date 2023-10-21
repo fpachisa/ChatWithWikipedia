@@ -8,3 +8,4 @@
 # Ignore specific file
 .env
 
+.idea/

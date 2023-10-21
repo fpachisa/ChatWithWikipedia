@@ -1,0 +1,10 @@
+# Ignore all .log files
+*.log
+
+
+# Ignore all .pyc files (compiled Python files)
+*.pyc
+
+# Ignore specific file
+.env
+

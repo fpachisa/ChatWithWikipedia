@@ -19,6 +19,7 @@ from css import bot_template, user_template, css
 import wikipedia
 from langchain.tools import WikipediaQueryRun
 from langchain.utilities import WikipediaAPIWrapper
+from langchain.prompts.prompt import PromptTemplate
 
 
 def wiki_to_text(page_title):
@@ -65,13 +66,22 @@ def get_vector_store(text_chunks):
 def get_conversation_chain(vector_store):
     # OpenAI Model
 
-    llm = ChatOpenAI()
-
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
+    custom_template = """Given the following conversation and a follow up question, always answer based on the context provided and not based on your general knowledge
+                        For e.g: If the article is about movie Fight Club you can't answer questions related to Donald Trump as that is not related to the current topic of Fight Club.
+                        If user asks irrelevant questions then politely answer that the question is not related to the topic
+                        Chat History:
+                        {chat_history}
+                        Follow Up Input: {question}
+                        Standalone question:"""
+
+    CUSTOM_QUESTION_PROMPT = PromptTemplate.from_template(custom_template)
+
     conversation_chain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
+        llm=ChatOpenAI(temperature=0, model="gpt-4"),
         retriever=vector_store.as_retriever(),
+        condense_question_llm = ChatOpenAI(temperature=0, model='gpt-3.5-turbo'),
         memory=memory
     )
 
@@ -95,7 +105,7 @@ def handle_user_input(question):
 
 def main():
     # load_dotenv()
-    st.set_page_config(page_title='Chat with Wikipedia', page_icon=':books:')
+    st.set_page_config(page_title='Chat with Wikipedia', page_icon=':books:', layout='centered')
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
@@ -110,6 +120,9 @@ def main():
     # storing summary in session state as it will disappear otherwise when questions are asked
     if "summary" not in st.session_state:
         st.session_state.summary = ""
+
+    if "url" not in st.session_state:
+        st.session_state.url = ""
 
 
     question = ""
@@ -139,7 +152,7 @@ def main():
                 st.write(error_msg)
                 st.session_state.summary = ""
             else:
-                st.write(url)
+                st.session_state.url = url
                 st.session_state.summary = wkp.run(current_topic)
                 text_chunks = get_chunk_text(raw_text)
 
@@ -150,6 +163,7 @@ def main():
                 st.session_state.conversation = get_conversation_chain(vector_store)
 
     if st.session_state.summary != "":
+        st.write(st.session_state.url)
         expander = st.expander("See summary")
         expander.write(st.session_state.summary)
         question = st.text_input("Ask Questions", key="question_text")

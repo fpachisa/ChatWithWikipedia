@@ -4,23 +4,23 @@ css = '''
     padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex
 }
 .chat-message.user {
-    background-color: #2b313e
+    background-color: #fca895   
 }
 .chat-message.bot {
-    background-color: #475063
+    background-color: #b8b6b4
 }
 .chat-message .avatar {
-  width: 20%;
+  width: 10%;
 }
 .chat-message .avatar img {
-  max-width: 78px;
-  max-height: 78px;
+  max-width: 58px;
+  max-height: 58px;
   border-radius: 50%;
 }
 .chat-message .message {
   width: 80%;
   padding: 0 1.5rem;
-  color: #fff;
+  color: #000;
 }
 '''
 

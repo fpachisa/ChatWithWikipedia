@@ -17,16 +17,15 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from css import bot_template, user_template, css
 import wikipedia
-from langchain.tools import WikipediaQueryRun
-from langchain.utilities import WikipediaAPIWrapper
 from langchain.prompts.prompt import PromptTemplate
+import textwrap
 
 
 def wiki_to_text(page_title):
     # Get the content from the Wikipedia page
     try:
         page_content = wikipedia.page(page_title)
-        return page_content.content, page_content.url, None
+        return page_content.content, page_content.url, page_content.summary, None
     except wikipedia.exceptions.PageError:
         error_msg = f"The page '{page_title}' does not exist on Wikipedia."
     except wikipedia.exceptions.DisambiguationError as e:
@@ -36,7 +35,7 @@ def wiki_to_text(page_title):
     except Exception as e:
         error_msg = f"An unexpected error occurred: {e}"
 
-    return None, None, error_msg
+    return None, None, None, error_msg
 
 
 
@@ -103,6 +102,15 @@ def handle_user_input(question):
             st.write(bot_template.replace("{{MSG}}", chat_history[i + 1].content), unsafe_allow_html=True)
 
 
+def beautify_summary(summary, title):
+
+    header = "\n\n"+title+"\n\n"
+
+    formatted_text = header + textwrap.fill(summary, width=100)
+    formatted_text = formatted_text.replace(title, "**"+title.title()+"**")
+
+    return formatted_text
+
 def main():
     # load_dotenv()
     st.set_page_config(page_title='Chat with Wikipedia', page_icon=':books:', layout='centered')
@@ -130,7 +138,7 @@ def main():
     st.header('Chat with Wikipedia :books:')
     current_topic = st.text_input("Enter a topic you want to know more about:")
 
-    wkp = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
+    #wkp = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 
     # this loop happens only if the topic changes and not with every question
     if current_topic != st.session_state.previous_topic:
@@ -147,13 +155,14 @@ def main():
             st.write("Farhat is the author of this app")
             st.session_state.summary = ""
         else:
-            raw_text, url, error_msg = wiki_to_text(current_topic)
+            raw_text, url, summary, error_msg = wiki_to_text(current_topic)
+            formatted_summary = beautify_summary(summary, current_topic)
             if error_msg:
                 st.write(error_msg)
                 st.session_state.summary = ""
             else:
                 st.session_state.url = url
-                st.session_state.summary = wkp.run(current_topic)
+                st.session_state.summary = formatted_summary
                 text_chunks = get_chunk_text(raw_text)
 
                 # Create Vector Store
@@ -164,7 +173,7 @@ def main():
 
     if st.session_state.summary != "":
         st.write(st.session_state.url)
-        expander = st.expander("See summary")
+        expander = st.expander(current_topic.title() + " Summary:")
         expander.write(st.session_state.summary)
         question = st.text_input("Ask Questions", key="question_text")
 

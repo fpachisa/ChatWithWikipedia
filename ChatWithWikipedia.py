@@ -10,7 +10,7 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings, HuggingFaceEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
@@ -138,8 +138,6 @@ def main():
     st.header('Chat with Wikipedia :books:')
     current_topic = st.text_input("Enter a topic you want to know more about:")
 
-    #wkp = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-
     # this loop happens only if the topic changes and not with every question
     if current_topic != st.session_state.previous_topic:
         print("creating vector store for: " + current_topic)
@@ -156,11 +154,11 @@ def main():
             st.session_state.summary = ""
         else:
             raw_text, url, summary, error_msg = wiki_to_text(current_topic)
-            formatted_summary = beautify_summary(summary, current_topic)
             if error_msg:
                 st.write(error_msg)
                 st.session_state.summary = ""
             else:
+                formatted_summary = beautify_summary(summary, current_topic)
                 st.session_state.url = url
                 st.session_state.summary = formatted_summary
                 text_chunks = get_chunk_text(raw_text)

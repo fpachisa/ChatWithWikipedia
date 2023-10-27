@@ -21,15 +21,16 @@ from langchain.prompts.prompt import PromptTemplate
 import textwrap
 
 
-def wiki_to_text(page_title):
+def wiki_to_text(query):
     # Get the content from the Wikipedia page
     try:
-        page_content = wikipedia.page(page_title)
+        page_titles = wikipedia.search(query)
+        page_content = wikipedia.page(page_titles[0])
         return page_content.content, page_content.url, page_content.summary, None
     except wikipedia.exceptions.PageError:
-        error_msg = f"The page '{page_title}' does not exist on Wikipedia."
+        error_msg = f"The page for '{query}' does not exist on Wikipedia."
     except wikipedia.exceptions.DisambiguationError as e:
-        error_msg = f"Multiple pages match '{page_title}'. Options include: {e.options}"
+        error_msg = f"Multiple pages match '{query}'. Options include: {e.options}"
     except wikipedia.exceptions.HTTPTimeoutError:
         error_msg = "The request to Wikipedia timed out."
     except Exception as e:
